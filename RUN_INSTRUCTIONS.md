@@ -1,6 +1,6 @@
 # Student Attendance Management System - Run Instructions
 
-## 🚀 How to Run the Application
+## How to Run the Application
 
 ### Method 1: Using Maven (Recommended)
 ```bash
@@ -26,13 +26,13 @@ mvnw.cmd spring-boot:run
 ./mvnw spring-boot:run
 ```
 
-## 🌐 Access the Application
+## Access the Application
 
 Once the application starts successfully, you can access it at:
 - **Main Application**: http://localhost:8080
 - **H2 Database Console**: http://localhost:8080/h2-console
 
-## 🔑 Login Credentials
+## Login Credentials
 
 ### Admin Access
 - **Username**: `admin`
@@ -49,7 +49,7 @@ Once the application starts successfully, you can access it at:
 - **Password**: `student123`
 - **Access**: View personal attendance reports
 
-## 🎯 Key Features to Test
+## Key Features to Test
 
 ### 1. Admin Features
 - Login as `admin` / `admin123`
@@ -70,7 +70,7 @@ Once the application starts successfully, you can access it at:
 - Filter by date ranges
 - View attendance statistics and charts
 
-## 📊 Sample Data Included
+## Sample Data Included
 
 The application comes pre-loaded with:
 - **8 Courses**: Mathematics, Physics, Chemistry, Biology, Computer Science, English Literature, History, Art
@@ -78,7 +78,7 @@ The application comes pre-loaded with:
 - **5 Teachers**: All with login credentials
 - **30 Days of Sample Attendance**: Random attendance records for testing
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### If the application doesn't start:
 1. **Check Java Version**: Ensure Java 21+ is installed
@@ -95,7 +95,7 @@ The application comes pre-loaded with:
 2. Check that the application is running on port 8080
 3. Try accessing http://localhost:8080/login
 
-## 🎨 Features Highlights
+## Features Highlights
 
 - **Interactive Enrollment**: Modal-based student enrollment in courses
 - **Data Visualization**: Charts and graphs for attendance reports
@@ -103,12 +103,13 @@ The application comes pre-loaded with:
 - **Responsive Design**: Works on desktop and mobile devices
 - **Sample Data**: Ready-to-use test data for immediate testing
 
-## 📱 Mobile Friendly
+## Mobile Friendly
 
 The application is fully responsive and works on:
 - Desktop computers
 - Tablets
 - Mobile phones
 
-Enjoy testing the Student Attendance Management System! 🎉
+Enjoy testing the Student Attendance Management System! 
+
 
