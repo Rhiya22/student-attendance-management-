@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courses - Student Attendance Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #343a40;
+        }
+        .sidebar .nav-link {
+            color: #adb5bd;
+        }
+        .sidebar .nav-link:hover {
+            color: #fff;
+            background-color: #495057;
+        }
+        .sidebar .nav-link.active {
+            color: #fff;
+            background-color: #007bff;
+        }
+        .main-content {
+            margin-left: 0;
+        }
+        @media (min-width: 768px) {
+            .main-content {
+                margin-left: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white">Attendance System</h4>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/dashboard}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/students}">
+                                <i class="fas fa-users"></i> Students
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" th:href="@{/admin/courses}">
+                                <i class="fas fa-book"></i> Courses
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
+                            <a class="nav-link" th:href="@{/teacher/attendance}">
+                                <i class="fas fa-check-circle"></i> Mark Attendance
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
+                            <a class="nav-link" th:href="@{/teacher/reports}">
+                                <i class="fas fa-chart-bar"></i> Reports
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="mt-auto pt-3">
+                        <div class="text-center">
+                            <span class="text-white-50" sec:authentication="name">User</span>
+                            <br>
+                            <small class="text-white-50" sec:authentication="authorities">Role</small>
+                        </div>
+                        <div class="text-center mt-2">
+                            <form th:action="@{/logout}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-outline-light btn-sm">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Courses Management</h1>
+                </div>
+
+                <!-- Flash Messages -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Add Course Form -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-book-open"></i> 
+                            <span th:text="${course.id != null ? 'Edit Course' : 'Add New Course'}">Add New Course</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="${course.id != null ? '/admin/courses/' + course.id + '/edit' : '/admin/courses'}" 
+                              th:object="${course}" method="post">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="name" class="form-label">Course Name</label>
+                                        <input type="text" class="form-control" id="name" th:field="*{name}" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="description" class="form-label">Description</label>
+                                        <textarea class="form-control" id="description" th:field="*{description}" rows="3"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> 
+                                    <span th:text="${course.id != null ? 'Update Course' : 'Add Course'}">Add Course</span>
+                                </button>
+                                <a th:href="@{/admin/courses}" class="btn btn-secondary" th:if="${course.id != null}">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Courses List -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list"></i> Courses List
+                            <span class="badge bg-primary ms-2" th:text="${#lists.size(courses)}">0</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${#lists.isEmpty(courses)}" class="text-center py-4">
+                            <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No courses found</h5>
+                            <p class="text-muted">Add your first course using the form above.</p>
+                        </div>
+                        
+                        <div th:if="${!#lists.isEmpty(courses)}" class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Course Name</th>
+                                        <th>Description</th>
+                                        <th>Students Enrolled</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="course : ${courses}">
+                                        <td th:text="${course.id}">1</td>
+                                        <td th:text="${course.name}">Mathematics</td>
+                                        <td th:text="${course.description}">Basic mathematics course</td>
+                                        <td>
+                                            <span class="badge bg-info" th:text="${#lists.size(course.students)}">0</span>
+                                            students
+                                            <button class="btn btn-sm btn-outline-info ms-2" 
+                                                    th:onclick="'showEnrollmentModal(' + ${course.id} + ')'">
+                                                <i class="fas fa-users"></i> Manage
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a th:href="@{'/admin/courses/' + ${course.id} + '/edit'}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                                <form th:action="@{'/admin/courses/' + ${course.id} + '/delete'}" 
+                                                      method="post" class="d-inline"
+                                                      onsubmit="return confirm('Are you sure you want to delete this course?')">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Enrollment Modal -->
+    <div class="modal fade" id="enrollmentModal" tabindex="-1" aria-labelledby="enrollmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="enrollmentModalLabel">Manage Student Enrollment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Available Students</h6>
+                            <div class="list-group" id="availableStudents">
+                                <!-- Students will be populated here -->
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Enrolled Students</h6>
+                            <div class="list-group" id="enrolledStudents">
+                                <!-- Enrolled students will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentCourseId = null;
+        let allStudents = /*[[${students}]]*/ [];
+        let courses = /*[[${courses}]]*/ [];
+        
+        function showEnrollmentModal(courseId) {
+            currentCourseId = courseId;
+            const course = courses.find(c => c.id === courseId);
+            if (!course) return;
+            
+            document.getElementById('enrollmentModalLabel').textContent = 
+                `Manage Student Enrollment - ${course.name}`;
+            
+            // Get enrolled student IDs
+            const enrolledStudentIds = course.students ? course.students.map(s => s.id) : [];
+            
+            // Populate available students
+            const availableStudentsHtml = allStudents
+                .filter(student => !enrolledStudentIds.includes(student.id))
+                .map(student => `
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${student.name}</strong><br>
+                            <small class="text-muted">${student.email}</small>
+                        </div>
+                        <button class="btn btn-sm btn-success" onclick="enrollStudent(${student.id})">
+                            <i class="fas fa-plus"></i> Enroll
+                        </button>
+                    </div>
+                `).join('');
+            
+            // Populate enrolled students
+            const enrolledStudentsHtml = allStudents
+                .filter(student => enrolledStudentIds.includes(student.id))
+                .map(student => `
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${student.name}</strong><br>
+                            <small class="text-muted">${student.email}</small>
+                        </div>
+                        <button class="btn btn-sm btn-danger" onclick="unenrollStudent(${student.id})">
+                            <i class="fas fa-minus"></i> Unenroll
+                        </button>
+                    </div>
+                `).join('');
+            
+            document.getElementById('availableStudents').innerHTML = 
+                availableStudentsHtml || '<div class="list-group-item text-muted">No available students</div>';
+            document.getElementById('enrolledStudents').innerHTML = 
+                enrolledStudentsHtml || '<div class="list-group-item text-muted">No enrolled students</div>';
+            
+            new bootstrap.Modal(document.getElementById('enrollmentModal')).show();
+        }
+        
+        function enrollStudent(studentId) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/courses/${currentCourseId}/enroll/${studentId}`;
+            document.body.appendChild(form);
+            form.submit();
+        }
+        
+        function unenrollStudent(studentId) {
+            if (confirm('Are you sure you want to unenroll this student?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/admin/courses/${currentCourseId}/unenroll/${studentId}`;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
+</body>
+</html>

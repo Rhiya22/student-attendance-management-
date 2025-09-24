@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Student Attendance Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #343a40;
+        }
+        .sidebar .nav-link {
+            color: #adb5bd;
+        }
+        .sidebar .nav-link:hover {
+            color: #fff;
+            background-color: #495057;
+        }
+        .sidebar .nav-link.active {
+            color: #fff;
+            background-color: #007bff;
+        }
+        .main-content {
+            margin-left: 0;
+        }
+        @media (min-width: 768px) {
+            .main-content {
+                margin-left: 250px;
+            }
+        }
+        .status-present { color: #28a745; }
+        .status-absent { color: #dc3545; }
+        .status-late { color: #ffc107; }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white">Attendance System</h4>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/dashboard}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                            <a class="nav-link" th:href="@{/admin/students}">
+                                <i class="fas fa-users"></i> Students
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                            <a class="nav-link" th:href="@{/admin/courses}">
+                                <i class="fas fa-book"></i> Courses
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/teacher/attendance}">
+                                <i class="fas fa-check-circle"></i> Mark Attendance
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" th:href="@{/teacher/reports}">
+                                <i class="fas fa-chart-bar"></i> Reports
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="mt-auto pt-3">
+                        <div class="text-center">
+                            <span class="text-white-50" sec:authentication="name">User</span>
+                            <br>
+                            <small class="text-white-50" sec:authentication="authorities">Role</small>
+                        </div>
+                        <div class="text-center mt-2">
+                            <form th:action="@{/logout}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-outline-light btn-sm">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Attendance Reports</h1>
+                </div>
+
+                <!-- Report Filters -->
+                <div class="row mb-4">
+                    <!-- Course Report -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-book"></i> Attendance by Course
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <form th:action="@{/teacher/reports/course}" method="get">
+                                    <div class="mb-3">
+                                        <label for="courseId" class="form-label">Select Course</label>
+                                        <select class="form-select" id="courseId" name="courseId" required>
+                                            <option value="">Choose a course...</option>
+                                            <option th:each="course : ${courses}" 
+                                                    th:value="${course.id}" 
+                                                    th:text="${course.name}">
+                                                Mathematics
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="startDate" class="form-label">Start Date</label>
+                                                <input type="date" class="form-control" id="startDate" name="startDate" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="endDate" class="form-label">End Date</label>
+                                                <input type="date" class="form-control" id="endDate" name="endDate" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search"></i> Generate Report
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Student Report -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-user"></i> Attendance by Student
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <form th:action="@{/teacher/reports/student}" method="get">
+                                    <div class="mb-3">
+                                        <label for="studentId" class="form-label">Select Student</label>
+                                        <select class="form-select" id="studentId" name="studentId" required>
+                                            <option value="">Choose a student...</option>
+                                            <option th:each="student : ${students}" 
+                                                    th:value="${student.id}" 
+                                                    th:text="${student.name + ' (' + student.email + ')'}">
+                                                John Doe (john@example.com)
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="startDate2" class="form-label">Start Date</label>
+                                                <input type="date" class="form-control" id="startDate2" name="startDate" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="endDate2" class="form-label">End Date</label>
+                                                <input type="date" class="form-control" id="endDate2" name="endDate" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-search"></i> Generate Report
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Results -->
+                <div th:if="${attendances != null}" class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-line"></i> 
+                            <span th:if="${course != null}" th:text="'Attendance Report for ' + ${course.name}">Course Report</span>
+                            <span th:if="${student != null}" th:text="'Attendance Report for ' + ${student.name}">Student Report</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Date Range:</strong> 
+                                <span th:text="${startDate}">2024-01-01</span> to 
+                                <span th:text="${endDate}">2024-01-31</span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Total Records:</strong> 
+                                <span class="badge bg-primary" th:text="${#lists.size(attendances)}">0</span>
+                            </div>
+                        </div>
+
+                        <!-- Attendance Statistics -->
+                        <div th:if="${!#lists.isEmpty(attendances)}" class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card text-center bg-success text-white">
+                                    <div class="card-body">
+                                        <i class="fas fa-check fa-2x mb-2"></i>
+                                        <h4 th:text="${#lists.size(attendances.?[status.name() == 'PRESENT'])}">0</h4>
+                                        <p class="mb-0">Present</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card text-center bg-danger text-white">
+                                    <div class="card-body">
+                                        <i class="fas fa-times fa-2x mb-2"></i>
+                                        <h4 th:text="${#lists.size(attendances.?[status.name() == 'ABSENT'])}">0</h4>
+                                        <p class="mb-0">Absent</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card text-center bg-warning text-white">
+                                    <div class="card-body">
+                                        <i class="fas fa-clock fa-2x mb-2"></i>
+                                        <h4 th:text="${#lists.size(attendances.?[status.name() == 'LATE'])}">0</h4>
+                                        <p class="mb-0">Late</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card text-center bg-info text-white">
+                                    <div class="card-body">
+                                        <i class="fas fa-percentage fa-2x mb-2"></i>
+                                        <h4 th:text="${#lists.size(attendances) > 0 ? #numbers.formatDecimal((#lists.size(attendances.?[status.name() == 'PRESENT']) + #lists.size(attendances.?[status.name() == 'LATE'])) / #lists.size(attendances) * 100, 1, 1) : 0}">0</h4>
+                                        <p class="mb-0">% Attendance</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Attendance Chart -->
+                        <div th:if="${!#lists.isEmpty(attendances)}" class="card mb-4">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-chart-pie"></i> Attendance Distribution
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="attendanceChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Daily Attendance Trend -->
+                        <div th:if="${!#lists.isEmpty(attendances)}" class="card mb-4">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-chart-line"></i> Daily Attendance Trend
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="trendChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div th:if="${#lists.isEmpty(attendances)}" class="text-center py-4">
+                            <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No attendance records found</h5>
+                            <p class="text-muted">No attendance data available for the selected criteria.</p>
+                        </div>
+
+                        <div th:if="${!#lists.isEmpty(attendances)}" class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th th:if="${student != null}">Course</th>
+                                        <th th:if="${course != null}">Student</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="attendance : ${attendances}">
+                                        <td th:text="${#temporals.format(attendance.date, 'yyyy-MM-dd')}">2024-01-15</td>
+                                        <td th:if="${student != null}" th:text="${attendance.course.name}">Mathematics</td>
+                                        <td th:if="${course != null}" th:text="${attendance.student.name}">John Doe</td>
+                                        <td>
+                                            <span th:if="${attendance.status.name() == 'PRESENT'}" 
+                                                  class="badge bg-success status-present">
+                                                <i class="fas fa-check"></i> Present
+                                            </span>
+                                            <span th:if="${attendance.status.name() == 'ABSENT'}" 
+                                                  class="badge bg-danger status-absent">
+                                                <i class="fas fa-times"></i> Absent
+                                            </span>
+                                            <span th:if="${attendance.status.name() == 'LATE'}" 
+                                                  class="badge bg-warning status-late">
+                                                <i class="fas fa-clock"></i> Late
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Set default date range (last 30 days)
+        const today = new Date();
+        const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+        
+        document.getElementById('startDate').valueAsDate = thirtyDaysAgo;
+        document.getElementById('endDate').valueAsDate = today;
+        document.getElementById('startDate2').valueAsDate = thirtyDaysAgo;
+        document.getElementById('endDate2').valueAsDate = today;
+
+        // Create charts if attendance data exists
+        const attendances = /*[[${attendances}]]*/ [];
+        if (attendances && attendances.length > 0) {
+            createAttendanceChart();
+            createTrendChart();
+        }
+
+        function createAttendanceChart() {
+            const presentCount = attendances.filter(a => a.status === 'PRESENT').length;
+            const absentCount = attendances.filter(a => a.status === 'ABSENT').length;
+            const lateCount = attendances.filter(a => a.status === 'LATE').length;
+
+            const ctx = document.getElementById('attendanceChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Present', 'Absent', 'Late'],
+                    datasets: [{
+                        data: [presentCount, absentCount, lateCount],
+                        backgroundColor: [
+                            '#28a745',
+                            '#dc3545',
+                            '#ffc107'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Attendance Distribution'
+                        }
+                    }
+                }
+            });
+        }
+
+        function createTrendChart() {
+            // Group attendance by date
+            const attendanceByDate = {};
+            attendances.forEach(attendance => {
+                const date = attendance.date;
+                if (!attendanceByDate[date]) {
+                    attendanceByDate[date] = { present: 0, absent: 0, late: 0 };
+                }
+                if (attendance.status === 'PRESENT') attendanceByDate[date].present++;
+                else if (attendance.status === 'ABSENT') attendanceByDate[date].absent++;
+                else if (attendance.status === 'LATE') attendanceByDate[date].late++;
+            });
+
+            // Sort dates
+            const sortedDates = Object.keys(attendanceByDate).sort();
+            
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sortedDates,
+                    datasets: [
+                        {
+                            label: 'Present',
+                            data: sortedDates.map(date => attendanceByDate[date].present),
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Absent',
+                            data: sortedDates.map(date => attendanceByDate[date].absent),
+                            borderColor: '#dc3545',
+                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Late',
+                            data: sortedDates.map(date => attendanceByDate[date].late),
+                            borderColor: '#ffc107',
+                            backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Daily Attendance Trend'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

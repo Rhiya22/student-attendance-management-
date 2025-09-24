@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students - Student Attendance Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #343a40;
+        }
+        .sidebar .nav-link {
+            color: #adb5bd;
+        }
+        .sidebar .nav-link:hover {
+            color: #fff;
+            background-color: #495057;
+        }
+        .sidebar .nav-link.active {
+            color: #fff;
+            background-color: #007bff;
+        }
+        .main-content {
+            margin-left: 0;
+        }
+        @media (min-width: 768px) {
+            .main-content {
+                margin-left: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white">Attendance System</h4>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/dashboard}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" th:href="@{/admin/students}">
+                                <i class="fas fa-users"></i> Students
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/teachers}">
+                                <i class="fas fa-chalkboard-teacher"></i> Teachers
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/courses}">
+                                <i class="fas fa-book"></i> Courses
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
+                            <a class="nav-link" th:href="@{/teacher/attendance}">
+                                <i class="fas fa-check-circle"></i> Mark Attendance
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
+                            <a class="nav-link" th:href="@{/teacher/reports}">
+                                <i class="fas fa-chart-bar"></i> Reports
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="mt-auto pt-3">
+                        <div class="text-center">
+                            <span class="text-white-50" sec:authentication="name">User</span>
+                            <br>
+                            <small class="text-white-50" sec:authentication="authorities">Role</small>
+                        </div>
+                        <div class="text-center mt-2">
+                            <form th:action="@{/logout}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-outline-light btn-sm">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Students Management</h1>
+                </div>
+
+                <!-- Flash Messages -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Add Student Form -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-user-plus"></i> 
+                            <span th:text="${student.id != null ? 'Edit Student' : 'Add New Student'}">Add New Student</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="${student.id != null ? '/admin/students/' + student.id + '/edit' : '/admin/students'}" 
+                              th:object="${student}" method="post">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="studentId" class="form-label">Student ID</label>
+                                        <input type="text" class="form-control" id="studentId" th:field="*{studentId}" required>
+                                        <div class="form-text">Unique 3-digit student ID (e.g., 101, 102)</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="name" class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" id="name" th:field="*{name}" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Email Address</label>
+                                        <input type="email" class="form-control" id="email" th:field="*{email}" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="dateOfBirth" class="form-label">Date of Birth</label>
+                                        <input type="date" class="form-control" id="dateOfBirth" th:field="*{dateOfBirth}" required>
+                                        <div class="form-text">Used as login password (YYYY-MM-DD format)</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="courses" class="form-label">Enroll in Courses</label>
+                                        <select class="form-select" id="courses" name="courseIds" multiple>
+                                            <option th:each="course : ${courses}" 
+                                                    th:value="${course.id}" 
+                                                    th:text="${course.name}">
+                                                Mathematics
+                                            </option>
+                                        </select>
+                                        <div class="form-text">Hold Ctrl/Cmd to select multiple courses</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> 
+                                    <span th:text="${student.id != null ? 'Update Student' : 'Add Student'}">Add Student</span>
+                                </button>
+                                <a th:href="@{/admin/students}" class="btn btn-secondary" th:if="${student.id != null}">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Students List -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list"></i> Students List
+                            <span class="badge bg-primary ms-2" th:text="${#lists.size(students)}">0</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${#lists.isEmpty(students)}" class="text-center py-4">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No students found</h5>
+                            <p class="text-muted">Add your first student using the form above.</p>
+                        </div>
+                        
+                        <div th:if="${!#lists.isEmpty(students)}" class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Student ID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Date of Birth</th>
+                                        <th>Courses Enrolled</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="student : ${students}">
+                                        <td th:text="${student.studentId}">101</td>
+                                        <td th:text="${student.name}">John Doe</td>
+                                        <td th:text="${student.email}">john@example.com</td>
+                                        <td th:text="${#temporals.format(student.dateOfBirth, 'yyyy-MM-dd')}">2000-05-15</td>
+                                        <td>
+                                            <span class="badge bg-info" th:text="${#lists.size(student.courses)}">0</span>
+                                            courses
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a th:href="@{'/admin/students/' + ${student.id} + '/edit'}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                                <form th:action="@{'/admin/students/' + ${student.id} + '/delete'}" 
+                                                      method="post" class="d-inline"
+                                                      onsubmit="return confirm('Are you sure you want to delete this student?')">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

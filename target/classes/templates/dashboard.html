@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Student Attendance Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #343a40;
+        }
+        .sidebar .nav-link {
+            color: #adb5bd;
+        }
+        .sidebar .nav-link:hover {
+            color: #fff;
+            background-color: #495057;
+        }
+        .sidebar .nav-link.active {
+            color: #fff;
+            background-color: #007bff;
+        }
+        .main-content {
+            margin-left: 0;
+        }
+        @media (min-width: 768px) {
+            .main-content {
+                margin-left: 250px;
+            }
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            transition: transform 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-card.students {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .stat-card.courses {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        .stat-card.attendance {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white">Attendance System</h4>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" th:href="@{/dashboard}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                            <a class="nav-link" th:href="@{/admin/students}">
+                                <i class="fas fa-users"></i> Students
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                            <a class="nav-link" th:href="@{/admin/teachers}">
+                                <i class="fas fa-chalkboard-teacher"></i> Teachers
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                            <a class="nav-link" th:href="@{/admin/courses}">
+                                <i class="fas fa-book"></i> Courses
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
+                            <a class="nav-link" th:href="@{/teacher/attendance}">
+                                <i class="fas fa-check-circle"></i> Mark Attendance
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
+                            <a class="nav-link" th:href="@{/teacher/reports}">
+                                <i class="fas fa-chart-bar"></i> Reports
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasRole('STUDENT')">
+                            <a class="nav-link" th:href="@{/student/reports}">
+                                <i class="fas fa-chart-bar"></i> My Reports
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="mt-auto pt-3">
+                        <div class="text-center">
+                            <span class="text-white-50" sec:authentication="name">User</span>
+                            <br>
+                            <small class="text-white-50" sec:authentication="authorities">Role</small>
+                        </div>
+                        <div class="text-center mt-2">
+                            <form th:action="@{/logout}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-outline-light btn-sm">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Dashboard</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <span class="badge bg-primary fs-6" th:text="${user.role}">ADMIN</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Welcome Message -->
+                <div class="alert alert-info" role="alert">
+                    <h4 class="alert-heading">
+                        <i class="fas fa-user-circle"></i> Welcome, <span th:text="${user.username}">Admin</span>!
+                    </h4>
+                    <p>You are logged in as <strong th:text="${user.role}">ADMIN</strong>. Use the navigation menu to access different features.</p>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row mb-4" sec:authorize="hasRole('ADMIN')">
+                    <div class="col-md-4 mb-3">
+                        <div class="card stat-card students h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-users fa-3x mb-3"></i>
+                                <h2 th:text="${totalStudents} ?: 0">0</h2>
+                                <h5>Total Students</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card stat-card courses h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-book fa-3x mb-3"></i>
+                                <h2 th:text="${totalCourses} ?: 0">0</h2>
+                                <h5>Total Courses</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card stat-card attendance h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-check-circle fa-3x mb-3"></i>
+                                <h2 th:text="${totalAttendances} ?: 0">0</h2>
+                                <h5>Total Attendance Records</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="row">
+                    <div class="col-12">
+                        <h3>Quick Actions</h3>
+                        <div class="row">
+                            <div class="col-md-3 mb-3" sec:authorize="hasRole('ADMIN')">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-user-plus fa-2x text-primary mb-3"></i>
+                                        <h5>Add Student</h5>
+                                        <p class="text-muted">Register a new student</p>
+                                        <a th:href="@{/admin/students}" class="btn btn-primary">Go to Students</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3" sec:authorize="hasRole('ADMIN')">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-book-open fa-2x text-success mb-3"></i>
+                                        <h5>Add Course</h5>
+                                        <p class="text-muted">Create a new course</p>
+                                        <a th:href="@{/admin/courses}" class="btn btn-success">Go to Courses</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3" sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-clipboard-check fa-2x text-warning mb-3"></i>
+                                        <h5>Mark Attendance</h5>
+                                        <p class="text-muted">Record student attendance</p>
+                                        <a th:href="@{/teacher/attendance}" class="btn btn-warning">Mark Attendance</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3" sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-chart-line fa-2x text-info mb-3"></i>
+                                        <h5>View Reports</h5>
+                                        <p class="text-muted">Generate attendance reports</p>
+                                        <a th:href="@{/teacher/reports}" class="btn btn-info">View Reports</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
