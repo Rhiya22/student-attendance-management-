@@ -1,8 +1,8 @@
-# 🎓 Student Attendance Management System
+# Student Attendance Management System
 
 A comprehensive Spring Boot web application for managing student attendance with role-based access control.
 
-## 🚀 Features
+## Features
 
 - **Role-based Authentication**: Admin, Teacher, and Student roles
 - **Custom Login System**: Students/Teachers login with ID and DOB
@@ -13,14 +13,14 @@ A comprehensive Spring Boot web application for managing student attendance with
 - **Data Visualization**: Interactive charts and reports
 - **Responsive Design**: Mobile-friendly Bootstrap UI
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 - **Backend**: Spring Boot 3.5.5, Spring Security, Spring Data JPA
 - **Database**: H2 (In-memory)
 - **Frontend**: Thymeleaf, Bootstrap 5, Chart.js
 - **Build Tool**: Maven
 
-## 🔑 Login Credentials
+## Login Credentials
 
 ### Admin Access
 - **Username**: `admin`
@@ -49,7 +49,7 @@ A comprehensive Spring Boot web application for managing student attendance with
 | `204` | `1982-02-14` | Mr. Clark |
 | `205` | `1976-09-30` | Prof. Rodriguez |
 
-## 🏃‍♂️ Quick Start
+## Quick Start
 
 ### Prerequisites
 - Java 21+
@@ -75,27 +75,27 @@ A comprehensive Spring Boot web application for managing student attendance with
    - **Username**: `sa`
    - **Password**: `password`
 
-## 📊 Features Overview
+## Features Overview
 
 ### Admin Capabilities
-- ✅ Student Management (CRUD operations)
-- ✅ Teacher Management (CRUD operations)
-- ✅ Course Management (CRUD operations)
-- ✅ Student Enrollment in Courses
-- ✅ System-wide Reports
+- Student Management (CRUD operations)
+- Teacher Management (CRUD operations)
+- Course Management (CRUD operations)
+- Student Enrollment in Courses
+- System-wide Reports
 
 ### Teacher Capabilities
-- ✅ Mark Individual Attendance
-- ✅ Bulk Attendance for Courses
-- ✅ Generate Reports with Charts
-- ✅ View Attendance Statistics
+- Mark Individual Attendance
+- Bulk Attendance for Courses
+- Generate Reports with Charts
+- View Attendance Statistics
 
 ### Student Capabilities
-- ✅ View Personal Attendance Reports
-- ✅ Attendance Statistics
-- ✅ Data Visualization Charts
+- View Personal Attendance Reports
+- Attendance Statistics
+- Data Visualization Charts
 
-## 🗄️ Database Schema
+## Database Schema
 
 The application uses the following entities:
 - **User**: Authentication and roles
@@ -104,7 +104,7 @@ The application uses the following entities:
 - **Course**: Course details
 - **Attendance**: Attendance records with status tracking
 
-## 🎨 UI Features
+## UI Features
 
 - **Responsive Design**: Bootstrap 5 with mobile support
 - **Interactive Charts**: Chart.js for data visualization
@@ -112,20 +112,20 @@ The application uses the following entities:
 - **Role-based Navigation**: Different menus for different roles
 - **Real-time Statistics**: Live attendance calculations
 
-## 🔒 Security
+## Security
 
 - **Spring Security**: Role-based access control
 - **Custom Authentication**: Multiple login methods
 - **Session Management**: Secure login/logout
 - **CSRF Protection**: Configured for web security
 
-## 📈 Performance
+## Performance
 
 - **JPA Optimization**: Proper lazy/eager loading
 - **Transaction Management**: Data consistency
 - **Query Optimization**: Custom repository methods
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -133,13 +133,9 @@ The application uses the following entities:
 4. Push to the branch
 5. Create a Pull Request
 
-## 📝 License
+## Author
 
-This project is licensed under the MIT License.
-
-## 👨‍💻 Author
-
-Created with ❤️ for educational purposes.
+Created for educational purposes.
 
 ---
 
